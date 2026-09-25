@@ -3,15 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "build:lib": "npm run build -w @ledgerly/payments",
+    "predev": "npm run build:lib && npm run snippets",
     "dev": "next dev",
+    "prebuild": "npm run build:lib && npm run snippets",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "npm run build:lib && npm run snippets && tsc --noEmit && npm run typecheck -w @ledgerly/payments",
+    "test": "npm test -w @ledgerly/payments",
+    "test:bundle": "node scripts/check-client-bundle.mjs",
+    "snippets": "node scripts/extract-snippets.mjs"
   },
   "dependencies": {
     "next": "16.3.6",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
+    "@ledgerly/payments": "^0.2.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -22,5 +31,11 @@
     "eslint-config-next": "16.3.6",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20.19.0"
   }
 }

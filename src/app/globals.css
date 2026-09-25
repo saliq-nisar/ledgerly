@@ -1,26 +1,357 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Class-based dark mode, toggled on <html> by the theme script/toggle. */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  color-scheme: light;
+}
+
+:root.dark {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+}
+
+::selection {
+  @apply bg-indigo-500/20;
+}
+
+/* ---------- Shared keyframes ---------- */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes draw-check {
+  from {
+    stroke-dashoffset: 48;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes ring-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes ripple {
+  from {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  to {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+@keyframes press {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(0.92);
+  }
+}
+
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.45s ease-out both;
+}
+
+.animate-ring-pop {
+  animation: ring-pop 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.animate-ripple {
+  animation: ripple 1.8s ease-out infinite;
+}
+
+.animate-press {
+  animation: press 0.5s ease-in-out 0.25s both;
+}
+
+.check-draw {
+  stroke-dasharray: 48;
+  animation: draw-check 0.55s ease-out 0.2s both;
+}
+
+/* ---------- How It Works: packets travelling along connectors ---------- */
+
+/* Mobile: vertical pipeline. Forward packets travel down, responses travel up. */
+@keyframes packet-down {
+  from {
+    top: 0%;
+  }
+  to {
+    top: 100%;
+  }
+}
+
+@keyframes packet-up {
+  from {
+    top: 100%;
+  }
+  to {
+    top: 0%;
+  }
+}
+
+/* Desktop: horizontal pipeline. Forward packets travel right, responses travel left. */
+@keyframes packet-right {
+  from {
+    left: 0%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+@keyframes packet-left {
+  from {
+    left: 100%;
+  }
+  to {
+    left: 0%;
+  }
+}
+
+.packet {
+  animation-duration: var(--packet-duration, 1.2s);
+  animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  animation-fill-mode: both;
+}
+
+.packet-forward {
+  left: 50%;
+  animation-name: packet-down;
+}
+
+.packet-return {
+  left: 50%;
+  animation-name: packet-up;
+}
+
+@media (min-width: 1024px) {
+  .packet-forward {
+    top: 50%;
+    animation-name: packet-right;
+  }
+  .packet-return {
+    top: 50%;
+    animation-name: packet-left;
+  }
+}
+
+.wire-active {
+  stroke-dasharray: 4 4;
+  animation: dash-flow 0.6s linear infinite;
+}
+
+.wire-active-reverse {
+  stroke-dasharray: 4 4;
+  animation: dash-flow 0.6s linear infinite reverse;
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* Keep packets visible at the midpoint of their connector instead of moving. */
+  .packet {
+    animation: none !important;
+  }
+  .packet-forward,
+  .packet-return {
+    top: 50%;
+  }
+}
+
+/* ---------- Docs: line-by-line code reveal & flow diagrams ---------- */
+
+@keyframes line-in {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+[data-reveal="pending"].reveal-lines .code-line {
+  opacity: 0;
+}
+
+[data-reveal="in"].reveal-lines .code-line {
+  animation: line-in 0.35s ease-out both;
+  animation-delay: calc(min(var(--i, 0), 24) * 40ms);
+}
+
+@keyframes flow-y {
+  from {
+    top: 0%;
+  }
+  to {
+    top: 100%;
+  }
+}
+
+@keyframes flow-x {
+  from {
+    left: 0%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+.flow-dot {
+  left: 50%;
+  animation-name: flow-y;
+  animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  animation-fill-mode: both;
+}
+
+@media (min-width: 1024px) {
+  .flow-dot-responsive {
+    top: 50%;
+    animation-name: flow-x;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-dot {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .flow-dot-md {
+    top: 50%;
+    animation-name: flow-x;
+  }
+}
+
+/* Animated highlight travelling along the "What is this?" connectors. */
+@keyframes link-shine {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes link-shine-x {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.link-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent, rgb(99 102 241), transparent);
+  animation: link-shine 1.8s ease-in-out infinite;
+}
+
+@media (min-width: 1024px) {
+  .link-line::after {
+    background: linear-gradient(to right, transparent, rgb(99 102 241), transparent);
+    animation-name: link-shine-x;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link-line::after {
+    display: none;
+  }
+}
+
+@media print {
+  [data-reveal="pending"].reveal-lines .code-line {
+    opacity: 1;
+  }
+}
+
+/* "What you get" cards: a packet travels into each feature node. */
+@keyframes wyg-travel {
+  0% {
+    left: -10%;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+.wyg-packet {
+  animation: wyg-travel 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wyg-packet {
+    display: none;
+  }
 }

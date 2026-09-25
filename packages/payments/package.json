@@ -1,0 +1,55 @@
+{
+  "name": "@ledgerly/payments",
+  "version": "0.2.0",
+  "description": "Secure, typed, framework-independent Stripe Checkout + webhooks for Node.js servers.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "sideEffects": [
+    "./dist/browser.js"
+  ],
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/browser.js",
+      "default": "./dist/index.js"
+    },
+    "./web": {
+      "types": "./dist/adapters/web.d.ts",
+      "browser": "./dist/browser.js",
+      "default": "./dist/adapters/web.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "!dist/**/*.tsbuildinfo",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "keywords": [
+    "stripe",
+    "payments",
+    "checkout",
+    "webhooks"
+  ],
+  "scripts": {
+    "clean": "node -e \"for (const d of ['dist','dist-test']) require('node:fs').rmSync(d,{recursive:true,force:true})\"",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test --test-reporter=spec \"dist-test/test/**/*.test.js\"",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": {
+    "stripe": "^22.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "server-only": "^0.0.1",
+    "typescript": "^5"
+  }
+}
